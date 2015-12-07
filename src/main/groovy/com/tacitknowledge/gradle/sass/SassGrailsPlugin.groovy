@@ -28,8 +28,6 @@ class SassGrailsPlugin implements Plugin<Project>
               type: SassWatchTask,
               dependsOn: [installSass])
 
-      findByName('processResources')?.dependsOn sassCompile
-
       withType(Jar) { bundleTask ->
         def inputFiles = project.fileTree(dir: "${project.projectDir}/grails-app/assets/scss", include: '**/*')
         bundleTask.inputs.files inputFiles

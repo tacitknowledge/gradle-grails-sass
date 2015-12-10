@@ -19,25 +19,36 @@ abstract class SassTask extends NodeTask
   @Override
   void exec()
   {
-    if(project.file("${project.projectDir}/$SCSS_PATH").exists())
-    {
-      args = [
-              "${project.projectDir}/$SCSS_PATH", "-o", "${project.buildDir}/resources/main/META-INF/assets",
-              "--include-path", "${project.buildDir}/resource/main/META-INF/assets"
-      ] + includePath + additionalParameters
-      super.exec()
-    }
-    if(project.file("${project.buildDir}/scss/META-INF/assets").exists()) {
-      args = [
-              "${project.buildDir}/scss/META-INF/assets", "-o", "${project.buildDir}/resources/main/META-INF/assets"
-      ] + includePath + additionalParameters
-      super.exec()
-    }
+    execWithArgs("${project.projectDir}/$SCSS_PATH", 
+      "-o", "${project.buildDir}/resources/main/META-INF/assets",
+      "--include-path", "${project.buildDir}/scss/META-INF/assets",
+      *includePath,
+      *additionalParameters)
+
+    execWithArgs("${project.buildDir}/scss/META-INF/assets", 
+      "-o", "${project.buildDir}/resources/main/META-INF/assets",
+      *includePath,
+      *additionalParameters)
   }
 
   def getIncludePath()
   {
     project.sass?.includePaths?.collectMany { ['--include-path', it.path] } ?: []
+  }
+
+  def hasScss(assetsPath)
+  {
+    def dir = project.file(assetsPath)
+    dir.exists() && dir.list().any { !it.startsWith('_') }
+  }
+
+  def execWithArgs(assetsPath, ...params)
+  {
+    if(hasScss(assetsPath)) 
+    {
+      args = [assetsPath, *params]
+      super.exec()
+    }
   }
 
   abstract def getAdditionalParameters()

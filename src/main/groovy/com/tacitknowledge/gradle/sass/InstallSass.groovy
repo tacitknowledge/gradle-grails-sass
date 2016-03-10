@@ -15,7 +15,9 @@ class InstallSass extends NpmTask
       def pkgName = project.sass.version ? "node-sass@${project.sass.version}" : 'node-sass'
       args = ['install', pkgName]
 
-      outputs.dir new File(project.node.nodeModulesDir, "node_modules/node-sass")
+      def sassDir = new File(project.node.nodeModulesDir, "node_modules/node-sass")
+      outputs.dir sassDir
+      enabled = !sassDir.exists()
     }
   }
 }

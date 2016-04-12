@@ -7,4 +7,6 @@ class SassGrailsExtension
   String version
 
   FileCollection includePaths
+
+  List additionalParameters
 }

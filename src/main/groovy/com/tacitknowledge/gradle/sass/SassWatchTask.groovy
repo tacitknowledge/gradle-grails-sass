@@ -35,7 +35,7 @@ class SassWatchTask extends SassTask
   }
 
   private void registerDir(Path path) {
-    println "Registering  $path to watch for changes"
+    println "Registering $path to watch for changes"
     WatchKey key = path.register(this.watcher,
             StandardWatchEventKinds.ENTRY_CREATE,
             StandardWatchEventKinds.ENTRY_DELETE,
@@ -45,31 +45,24 @@ class SassWatchTask extends SassTask
 
   @Override
   void exec() {
+    Thread.start {
+      project.sass.watchList.each { String dir ->
+        Path path = Paths.get(dir)
+        registerRecursive(path)
+      }
 
-    project.sass.watchList.each { String dir ->
-      Path path = Paths.get(dir)
-      registerRecursive(path)
-
-      Thread.start {
-        while (true) {
-          WatchKey key = this.watcher.take(); //take() waits until there is an event
-          key.pollEvents().each { event ->
-            //copy only .scss files
-            if (event.context().toString().contains('.scss')) {
-              Path location = keys.get(key); //get the full path of the file to copy
-              if (location) {
-                Path src = location.resolve(event.context())
-                String dest = "$project.buildDir/scss/META-INF/assets/${src.toString().split('/scss/').last()}"
-                println "copying $src to $dest"
-                Files.copy(src, Paths.get(dest), StandardCopyOption.REPLACE_EXISTING)
-              }
+      for (WatchKey key = watcher.take(); key.reset();) {
+        //while (true) {
+        key.pollEvents().each { event ->
+          //copy only .scss files
+          if (event.context().toString().contains('.scss')) {
+            Path location = keys.get(key); //get the full path of the file to copy
+            if (location) {
+              Path src = location.resolve(event.context())
+              String dest = "$project.buildDir/scss/META-INF/assets/${src.toString().split('/scss/').last()}"
+              println "copying $src to $dest"
+              Files.copy(src, Paths.get(dest), StandardCopyOption.REPLACE_EXISTING)
             }
-          }
-
-          //reset to continue watching
-          boolean valid = key.reset()
-          if (!valid) {
-            break
           }
         }
       }

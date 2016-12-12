@@ -51,7 +51,13 @@ class SassWatchTask extends SassTask
         registerRecursive(path)
       }
 
-      for (WatchKey key = watcher.take(); key.reset();) {
+      for (;;) {
+        WatchKey key;
+        try {
+            key = watcher.take();
+        } catch (InterruptedException x) {
+            return;
+        }
         //while (true) {
         key.pollEvents().each { event ->
           //copy only .scss files
@@ -64,6 +70,10 @@ class SassWatchTask extends SassTask
               Files.copy(src, Paths.get(dest), StandardCopyOption.REPLACE_EXISTING)
             }
           }
+        }
+        boolean valid = key.reset();
+        if (!valid) {
+            break;
         }
       }
     }

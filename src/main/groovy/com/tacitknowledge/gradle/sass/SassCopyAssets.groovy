@@ -7,8 +7,12 @@ class SassCopyAssets extends Copy
   SassCopyAssets()
   {
     project.afterEvaluate{
-      from project.configurations.compile.collect{
+      from project.configurations.compile.collect {
         project.zipTree(it).matching { include '**/META-INF/assets/**/*.scss' }
+      }
+
+      from("$project.buildDir/resources/main/") {
+        include '**/META-INF/assets/**/*.scss'
       }
       into "$project.buildDir/scss"
     }

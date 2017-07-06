@@ -1,6 +1,6 @@
 package com.tacitknowledge.gradle.sass
 
-import com.moowork.gradle.node.task.NpmTask
+import com.moowork.gradle.node.npm.NpmTask
 
 class InstallSass extends NpmTask
 {
@@ -11,7 +11,7 @@ class InstallSass extends NpmTask
 
     project.afterEvaluate{
       workingDir = project.node.nodeModulesDir
-      
+
       def pkgName = project.sass.version ? "node-sass@${project.sass.version}" : 'node-sass'
       args = ['install', pkgName]
 
